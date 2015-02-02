@@ -1,5 +1,5 @@
 /*
- * ARM64 generic CPU idle driver.
+ * ARM/ARM64 generic CPU idle driver.
  *
  * Copyright (C) 2014 ARM Ltd.
  * Author: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
@@ -9,7 +9,7 @@
  * published by the Free Software Foundation.
  */
 
-#define pr_fmt(fmt) "CPUidle arm64: " fmt
+#define pr_fmt(fmt) "CPUidle arm: " fmt
 
 #include <linux/cpuidle.h>
 #include <linux/cpumask.h>
@@ -24,7 +24,7 @@
 #include "dt_idle_states.h"
 
 /*
- * arm64_enter_idle_state - Programs CPU to enter the specified state
+ * arm_enter_idle_state - Programs CPU to enter the specified state
  *
  * dev: cpuidle device
  * drv: cpuidle driver
@@ -33,8 +33,8 @@
  * Called from the CPUidle framework to program the device to the
  * specified target state selected by the governor.
  */
-static int arm64_enter_idle_state(struct cpuidle_device *dev,
-				  struct cpuidle_driver *drv, int idx)
+static int arm_enter_idle_state(struct cpuidle_device *dev,
+				struct cpuidle_driver *drv, int idx)
 {
 	int ret;
 
@@ -58,8 +58,8 @@ static int arm64_enter_idle_state(struct cpuidle_device *dev,
 	return ret ? -1 : idx;
 }
 
-static struct cpuidle_driver arm64_idle_driver = {
-	.name = "arm64_idle",
+static struct cpuidle_driver arm_idle_driver = {
+	.name = "arm_idle",
 	.owner = THIS_MODULE,
 	/*
 	 * State at index 0 is standby wfi and considered standard
@@ -69,33 +69,33 @@ static struct cpuidle_driver arm64_idle_driver = {
 	 * handler for idle state index 0.
 	 */
 	.states[0] = {
-		.enter                  = arm64_enter_idle_state,
+		.enter                  = arm_enter_idle_state,
 		.exit_latency           = 1,
 		.target_residency       = 1,
 		.power_usage		= UINT_MAX,
 		.flags                  = CPUIDLE_FLAG_TIME_VALID,
 		.name                   = "WFI",
-		.desc                   = "ARM64 WFI",
+		.desc                   = "ARM WFI",
 	}
 };
 
-static const struct of_device_id arm64_idle_state_match[] __initconst = {
+static const struct of_device_id arm_idle_state_match[] __initconst = {
 	{ .compatible = "arm,idle-state",
-	  .data = arm64_enter_idle_state },
+	  .data = arm_enter_idle_state },
 	{ },
 };
 
 /*
- * arm64_idle_init
+ * arm_idle_init
  *
- * Registers the arm64 specific cpuidle driver with the cpuidle
+ * Registers the arm specific cpuidle driver with the cpuidle
  * framework. It relies on core code to parse the idle states
  * and initialize them using driver data structures accordingly.
  */
-static int __init arm64_idle_init(void)
+static int __init arm_idle_init(void)
 {
 	int cpu, ret;
-	struct cpuidle_driver *drv = &arm64_idle_driver;
+	struct cpuidle_driver *drv = &arm_idle_driver;
 
 	/*
 	 * Initialize idle states data, starting at index 1.
@@ -103,10 +103,8 @@ static int __init arm64_idle_init(void)
 	 * let the driver initialization fail accordingly since there is no
 	 * reason to initialize the idle driver if only wfi is supported.
 	 */
-	ret = dt_init_idle_driver(drv, arm64_idle_state_match, 1);
-	if (ret <= 0) {
-		if (ret)
-			pr_err("failed to initialize idle states\n");
+	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+	if (ret <= 0)
 		return ret ? : -ENODEV;
 	}
 
@@ -130,4 +128,4 @@ static int __init arm64_idle_init(void)
 
 	return 0;
 }
-device_initcall(arm64_idle_init);
+device_initcall(arm_idle_init);
