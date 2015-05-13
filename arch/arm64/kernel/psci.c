@@ -169,12 +169,15 @@ static int psci_migrate_info_type(void)
 	return err;
 }
 
-static int __maybe_unused cpu_psci_cpu_init_idle(struct device_node *cpu_node,
-						 unsigned int cpu)
+static int __maybe_unused cpu_psci_cpu_init_idle(unsigned int cpu)
 {
 	int i, ret, count = 0;
 	struct psci_power_state *psci_states;
-	struct device_node *state_node;
+	struct device_node *state_node, *cpu_node;
+
+	cpu_node = of_get_cpu_node(cpu, NULL);
+	if (!cpu_node)
+		return -ENODEV;
 
 	/*
 	 * If the PSCI cpu_suspend function hook has not been initialized
@@ -436,7 +439,30 @@ int __init psci_init(void)
 	return init_fn(np);
 }
 
-static int __init cpu_psci_cpu_init(struct device_node *dn, unsigned int cpu)
+/*
+ * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
+ * explicitly clarified in SBBR
+ */
+int __init psci_acpi_init(void)
+{
+	if (!acpi_psci_present()) {
+		pr_info("is not implemented in ACPI.\n");
+		return -EOPNOTSUPP;
+	}
+
+	pr_info("probing for conduit method from ACPI.\n");
+
+	if (acpi_psci_use_hvc())
+		invoke_psci_fn = __invoke_psci_fn_hvc;
+	else
+		invoke_psci_fn = __invoke_psci_fn_smc;
+
+	return psci_probe();
+}
+
+#ifdef CONFIG_SMP
+
+static int __init cpu_psci_cpu_init(unsigned int cpu)
 {
 	pr_info("Initializing psci_cpu_init\n");
 	return 0;
