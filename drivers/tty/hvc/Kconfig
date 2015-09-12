@@ -87,7 +87,7 @@ config HVC_UDBG
 	 console for userspace. Do NOT enable in production kernels. 
 
 config HVC_DCC
-       bool "ARM/ARM64 JTAG DCC console"
+       bool "ARM JTAG DCC console"
        depends on ARM || ARM64
        select HVC_DRIVER
        help
