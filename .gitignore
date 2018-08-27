@@ -53,7 +53,7 @@ Module.symvers
 /Module.markers
 /net/wireguard/*
 /out/*
-
+/modules/*
 
 #
 # Debian directory (make deb-pkg)
