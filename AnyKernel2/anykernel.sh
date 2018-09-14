@@ -6,7 +6,7 @@
 properties() { '
 kernel.string=Phantom Kernel by @Dencel007. Credits: TeamQuantum & TeamGhost
 do.devicecheck=1
-do.modules=0
+do.modules=1
 do.cleanup=1
 do.cleanuponabort=1
 device.name1=santoni
